@@ -1,19 +1,19 @@
 {
-  "name": "n8n-nodes-<...>",
+  "name": "n8n-nodes-splitinbatches-advanced",
   "version": "0.1.0",
-  "description": "",
+  "description": "The same functionality as the splitinbatches node but then with more options.",
   "keywords": [
     "n8n-community-node-package"
   ],
   "license": "MIT",
-  "homepage": "",
+  "homepage": "https://github.com/bramkn/n8n-nodes-splitinbatches-advanced.git",
   "author": {
-    "name": "",
-    "email": ""
+    "name": "Bram Knuever",
+    "email": "bram@knitco.nl"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/<...>/n8n-nodes-<...>.git"
+    "url": "https://github.com/bramkn/n8n-nodes-splitinbatches-advanced.git"
   },
   "main": "index.js",
   "scripts": {
@@ -29,13 +29,8 @@
   ],
   "n8n": {
     "n8nNodesApiVersion": 1,
-    "credentials": [
-      "dist/credentials/ExampleCredentialsApi.credentials.js",
-      "dist/credentials/HttpBinApi.credentials.js"
-    ],
     "nodes": [
-      "dist/nodes/ExampleNode/ExampleNode.node.js",
-      "dist/nodes/HttpBin/HttpBin.node.js"
+      "dist/nodes/SplitInBatchesAdvanced/SplitInBatchesAdvanced.node.js"
     ]
   },
   "devDependencies": {
