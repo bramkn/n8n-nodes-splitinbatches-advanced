@@ -1,7 +1,7 @@
 {
   "name": "n8n-nodes-splitinbatches-advanced",
   "version": "0.1.0",
-  "description": "The same functionality as the splitinbatches node but then with more options.",
+  "description": "The same functionality as the splitinbatches node, with an added Done path to continue on after being finished. Including the option to combine run items.",
   "keywords": [
     "n8n-community-node-package"
   ],

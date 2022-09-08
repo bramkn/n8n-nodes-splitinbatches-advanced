@@ -5,6 +5,8 @@ This path will be taken when the split in batches node is done with its loop of 
 
 If you want to use this node as a normal split in batches node that is possible, simply don't add an output to the Done path.
 
+If you have any questions or remarks please contact me @ bram@knitco.nl
+
 [n8n](https://n8n.io/) is a [fair-code licensed](https://docs.n8n.io/reference/license/) workflow automation platform.
 
 ## Installation
