@@ -16,7 +16,7 @@ export class SplitInBatchesAdvanced implements INodeType {
 		inputs: ['main'],
 		// eslint-disable-next-line n8n-nodes-base/node-class-description-outputs-wrong
 		outputs: ['main', 'main'],
-		outputNames: ['Loop', 'Done'],
+		outputNames: ['Done' , 'Loop'],
 		properties: [
 			{
 				displayName:
@@ -84,7 +84,7 @@ export class SplitInBatchesAdvanced implements INodeType {
 			nodeContext.maxRunIndex = Math.ceil(items.length / batchSize);
 
 			// Get the items which should be returned
-			returnItems[0].push.apply(returnItems[0], items.splice(0, batchSize));
+			returnItems[1].push.apply(returnItems[1], items.splice(0, batchSize));
 
 			// Set the other items to be saved in the context to return at later runs
 			nodeContext.items = items;
@@ -93,7 +93,7 @@ export class SplitInBatchesAdvanced implements INodeType {
 		} else {
 			// The node has been called before. So return the next batch of items.
 			nodeContext.currentRunIndex += 1;
-			returnItems[0].push.apply(returnItems[0], nodeContext.items.splice(0, batchSize));
+			returnItems[1].push.apply(returnItems[1], nodeContext.items.splice(0, batchSize));
 
 			if(options.combine===true){
 				nodeContext.processedItems.push.apply(nodeContext.processedItems,items);
@@ -106,13 +106,13 @@ export class SplitInBatchesAdvanced implements INodeType {
 
 		nodeContext.noItemsLeft = nodeContext.items.length === 0;
 
-		if (returnItems[0].length === 0) {
+		if (returnItems[1].length === 0) {
 			// No data left to return so stop execution of the branch
-			returnItems[1] = nodeContext.processedItems;
+			returnItems[0] = nodeContext.processedItems;
 			return returnItems;
 		}
 
-		returnItems[0].map((item, index) => {
+		returnItems[1].map((item, index) => {
 			item.pairedItem = {
 				item: index,
 			};
