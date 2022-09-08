@@ -17,7 +17,7 @@ This node was developed and tested with version 0.193.3.
 
 ## Usage
 
-![SplitInBatchesAdvanced](https://github.com/bramkn/n8n-nodes-switch9000/blob/master/images/SplitInBatchesAdvanced.png)
+![SplitInBatchesAdvanced](https://github.com/bramkn/n8n-nodes-splitinbatches-advanced/blob/master/images/SplitInBatchesAdvanced.png)
 
 The node works the same as the split in batches node. But with some quality of life additions.
 * [n8n splitinbatches node docs](https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.splitinbatches/)
@@ -25,7 +25,7 @@ The node works the same as the split in batches node. But with some quality of l
 The node will continue on the Done path when the batches are finished processing.
 The node has the option to combine the data into one list of items, instead of the split runs of items.
 
-![SplitInBatchesAdvancedCombine](https://github.com/bramkn/n8n-nodes-switch9000/blob/master/images/SplitInBatchesAdvancedCombine.png)
+![SplitInBatchesAdvancedCombine](https://github.com/bramkn/n8n-nodes-splitinbatches-advanced/blob/master/images/SplitInBatchesAdvancedCombine.png)
 
 The data returned is the data coming into the node after each iteration of the loop.
 
