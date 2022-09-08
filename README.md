@@ -38,6 +38,6 @@ The data returned is the data coming into the node after each iteration of the l
 
 ## Version history
 
-_This is another optional section. If your node has multiple versions, include a short description of available versions and what changed, as well as any compatibility impact._
+v1: first version. No new functionality in development at this time.
 
 
