@@ -1,5 +1,6 @@
 import { IExecuteFunctions } from 'n8n-core';
 import { IDataObject, INodeExecutionData, INodeType, INodeTypeDescription } from 'n8n-workflow';
+import { getWorkflow } from './GenericFunctions';
 
 export class SplitInBatchesAdvanced implements INodeType {
 	description: INodeTypeDescription = {
@@ -13,6 +14,12 @@ export class SplitInBatchesAdvanced implements INodeType {
 			name: 'SplitInBatches-Advanced',
 			color: '#733bde',
 		},
+		credentials: [
+			{
+				name: 'n8nApi',
+				required: false,
+			},
+		],
 		inputs: ['main'],
 		// eslint-disable-next-line n8n-nodes-base/node-class-description-outputs-wrong
 		outputs: ['main', 'main'],
@@ -58,6 +65,14 @@ export class SplitInBatchesAdvanced implements INodeType {
 						description:
 							'Whether the node will combine all items before outputting to Done',
 					},
+					{
+						displayName: 'Process Batch in Subworkflow',
+						name: 'batchInSubWorkflow',
+						type: 'boolean',
+						default: false,
+						description:
+							'Whether the node will process the batches in seperate Subworkflows',
+					},
 				],
 			},
 		],
@@ -68,6 +83,15 @@ export class SplitInBatchesAdvanced implements INodeType {
 		const options = this.getNodeParameter('options', 0, {}) as IDataObject;
 
 		const nodeContext = this.getContext('node');
+		const workflow = this.getWorkflow();
+		const workflowId = workflow.id as number;
+		const workflowName = workflow.name as string;
+		let workflowJson;
+
+		if(options.batchInSubWorkflow === true){
+			workflowJson = await getWorkflow.call(this,workflowId)
+			console.log(workflowJson.toString());
+		}
 
 		// Get the input data and create a new array so that we can remove
 		// items without a problem
