@@ -1,6 +1,6 @@
 import { IExecuteFunctions } from 'n8n-core';
 import { IDataObject, INodeExecutionData, INodeType, INodeTypeDescription } from 'n8n-workflow';
-import { getWorkflow } from './GenericFunctions';
+import { generateSubworkflow, getWorkflow } from './GenericFunctions';
 
 export class SplitInBatchesAdvanced implements INodeType {
 	description: INodeTypeDescription = {
@@ -88,9 +88,12 @@ export class SplitInBatchesAdvanced implements INodeType {
 		const workflowName = workflow.name as string;
 		let workflowJson;
 
+
 		if(options.batchInSubWorkflow === true){
+			console.log('subprocesses')
 			workflowJson = await getWorkflow.call(this,workflowId)
-			console.log(workflowJson.toString());
+			const subWorkflow = await generateSubworkflow(workflowJson,workflowName);
+			console.log(subWorkflow.toString());
 		}
 
 		// Get the input data and create a new array so that we can remove
