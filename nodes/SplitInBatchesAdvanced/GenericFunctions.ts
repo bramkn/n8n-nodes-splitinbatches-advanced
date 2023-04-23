@@ -71,9 +71,7 @@ export async function generateSubworkflow(workflow:IDataObject,thisNode:string){
 
 	let includedPaths = [] as IDataObject[];
 	function checkPath(path:IDataObject){
-		console.log(path);
 		if(includedPaths.includes(path)){
-		 //nothing;
 		}
 		else{
 			includedPaths.push(path);
@@ -83,13 +81,12 @@ export async function generateSubworkflow(workflow:IDataObject,thisNode:string){
 			}
 		}
 	}
-	const startPaths = arrayOfPaths.filter(x=> x.from ===thisNode && x.parentIndex !== 0);
-	console.log(startPaths);
+	const startPaths = arrayOfPaths.filter(x=> x.from ===thisNode && x.parentIndex !== '0');
 	for (let pathToCheck of startPaths) {
 		checkPath(pathToCheck);
 	}
-
-	includedPaths = includedPaths.filter(x=> !(x.from === thisNode && x.parentIndex === 0)) as IDataObject[];
+console.log(startPaths);
+	includedPaths = includedPaths.filter(x=> !(x.from === thisNode && x.parentIndex === '0')) as IDataObject[];
 
 	const includedNodesList = [...new Set(includedPaths.map(x => x.from).concat(includedPaths.map(x => x.to)))];
 
@@ -141,12 +138,14 @@ export async function generateSubworkflow(workflow:IDataObject,thisNode:string){
 		"executeOnce": true
 	};
 
-	let positionOfStartNode = includedNodes[0].position as any;
+	const maxPosition = includedNodes.reduce((prev, current) => ((prev.position as number) > (current?.position as number)) ? prev : current)
+
+	let positionOfStartNode = Object.assign([],includedNodes[0].position) as any;
 	positionOfStartNode[0] = positionOfStartNode[0] - 300;
 	const startNodeWithPosition = {...startNode,position:positionOfStartNode};
 
-	let positionOfEndNode = includedNodes[0].position as any;
-	positionOfEndNode[0] = positionOfEndNode[0] - 600;
+	let positionOfEndNode = Object.assign([],maxPosition.position) as any;
+	positionOfEndNode[0] = positionOfEndNode[0] + 300;
 	const endNodeWithPosition = {...clearDataNode,position:positionOfEndNode};
 
 	includedNodes.push(startNodeWithPosition);

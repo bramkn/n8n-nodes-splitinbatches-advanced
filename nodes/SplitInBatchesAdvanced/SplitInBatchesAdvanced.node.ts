@@ -81,19 +81,19 @@ export class SplitInBatchesAdvanced implements INodeType {
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][] | null> {
 
 		const options = this.getNodeParameter('options', 0, {}) as IDataObject;
-
+		console.log('test')
 		const nodeContext = this.getContext('node');
-		const workflow = this.getWorkflow();
-		const workflowId = workflow.id as number;
-		const workflowName = workflow.name as string;
+		console.log('test')
+		const workflowId = this.getWorkflow().id as number;
+		console.log('test')
+		const nodeName = this.getNode().name as string;
+		console.log('test')
 		let workflowJson;
 
 
 		if(options.batchInSubWorkflow === true){
-			console.log('subprocesses')
 			workflowJson = await getWorkflow.call(this,workflowId)
-			const subWorkflow = await generateSubworkflow(workflowJson,workflowName);
-			console.log(subWorkflow.toString());
+			const subWorkflow = await generateSubworkflow(workflowJson,nodeName);
 		}
 
 		// Get the input data and create a new array so that we can remove
