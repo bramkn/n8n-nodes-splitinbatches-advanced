@@ -42,7 +42,7 @@ export async function getWorkflow(
 	}
 }
 
-export async function generateSubworkflow(workflow:IDataObject,thisNode:string){
+export async function generateSubworkflow(workflow:IDataObject, thisNode:string, clearDataAfterProcessing:boolean = false){
 	const nodes = workflow.nodes as IDataObject[];
 	const connections = workflow.connections as IDataObject;
 	const arrayOfPaths = [] as IDataObject[];
@@ -85,8 +85,12 @@ export async function generateSubworkflow(workflow:IDataObject,thisNode:string){
 	for (let pathToCheck of startPaths) {
 		checkPath(pathToCheck);
 	}
-console.log(startPaths);
-	includedPaths = includedPaths.filter(x=> !(x.from === thisNode && x.parentIndex === '0')) as IDataObject[];
+	if(clearDataAfterProcessing){
+		includedPaths = includedPaths.filter(x=> !(x.from === thisNode && x.parentIndex === '0')) as IDataObject[];
+	}
+	else{
+		includedPaths = includedPaths.filter(x=> !(x.from === thisNode && x.parentIndex === '0') && x.to !== thisNode ) as IDataObject[];
+	}
 
 	const includedNodesList = [...new Set(includedPaths.map(x => x.from).concat(includedPaths.map(x => x.to)))];
 
@@ -122,34 +126,33 @@ console.log(startPaths);
 		"typeVersion": 1,
 	};
 
-	const clearDataNode = {
-		"parameters": {
-			"keepOnlySet": true,
-			"options": {}
-		},
-		"id": "ccca7fef-7b2e-4399-a2d4-9cf3300f515c",
-		"name": "EndClearDataNodeAfterAutomatedSubWorkflow",
-		"type": "n8n-nodes-base.set",
-		"typeVersion": 1,
-		"position": [
-			1800,
-			-460
-		],
-		"executeOnce": true
-	};
 
-	const maxPosition = includedNodes.reduce((prev, current) => ((prev.position as number) > (current?.position as number)) ? prev : current)
 
+	// Add StartNode
 	let positionOfStartNode = Object.assign([],includedNodes[0].position) as any;
 	positionOfStartNode[0] = positionOfStartNode[0] - 300;
 	const startNodeWithPosition = {...startNode,position:positionOfStartNode};
-
-	let positionOfEndNode = Object.assign([],maxPosition.position) as any;
-	positionOfEndNode[0] = positionOfEndNode[0] + 300;
-	const endNodeWithPosition = {...clearDataNode,position:positionOfEndNode};
-
 	includedNodes.push(startNodeWithPosition);
-	includedNodes.push(endNodeWithPosition);
+
+	// Add End Node to clear data before returning
+	if(clearDataAfterProcessing){
+		const clearDataNode = {
+			"parameters": {
+				"keepOnlySet": true,
+				"options": {}
+			},
+			"id": "ccca7fef-7b2e-4399-a2d4-9cf3300f515c",
+			"name": "EndClearDataNodeAfterAutomatedSubWorkflow",
+			"type": "n8n-nodes-base.set",
+			"typeVersion": 1,
+			"executeOnce": true
+		};
+		const maxPosition = includedNodes.reduce((prev, current) => ((prev.position as number) > (current.position as number)) ? prev : current)
+		let positionOfEndNode = Object.assign([],maxPosition.position) as any;
+		positionOfEndNode[0] = positionOfEndNode[0] + 300;
+		const endNodeWithPosition = {...clearDataNode,position:positionOfEndNode};
+		includedNodes.push(endNodeWithPosition);
+	}
 
 	return {nodes:includedNodes,connections:includedConnections};
 }

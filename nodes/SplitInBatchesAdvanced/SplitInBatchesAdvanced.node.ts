@@ -1,5 +1,5 @@
 import { IExecuteFunctions } from 'n8n-core';
-import { IDataObject, INodeExecutionData, INodeType, INodeTypeDescription } from 'n8n-workflow';
+import { IDataObject, IExecuteWorkflowInfo, INodeExecutionData, INodeType, INodeTypeDescription, IWorkflowBase } from 'n8n-workflow';
 import { generateSubworkflow, getWorkflow } from './GenericFunctions';
 
 export class SplitInBatchesAdvanced implements INodeType {
@@ -73,6 +73,14 @@ export class SplitInBatchesAdvanced implements INodeType {
 						description:
 							'Whether the node will process the batches in seperate Subworkflows',
 					},
+					{
+						displayName: 'Clear Data before returning from Subworkflow',
+						name: 'clearDataInSubworkflow',
+						type: 'boolean',
+						default: false,
+						description:
+							'Whether the node will return an empty item after processing the data in the subworkflow',
+					},
 				],
 			},
 		],
@@ -81,70 +89,101 @@ export class SplitInBatchesAdvanced implements INodeType {
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][] | null> {
 
 		const options = this.getNodeParameter('options', 0, {}) as IDataObject;
-		console.log('test')
 		const nodeContext = this.getContext('node');
-		console.log('test')
-		const workflowId = this.getWorkflow().id as number;
-		console.log('test')
-		const nodeName = this.getNode().name as string;
-		console.log('test')
-		let workflowJson;
-
-
-		if(options.batchInSubWorkflow === true){
-			workflowJson = await getWorkflow.call(this,workflowId)
-			const subWorkflow = await generateSubworkflow(workflowJson,nodeName);
-		}
-
-		// Get the input data and create a new array so that we can remove
-		// items without a problem
-		const items = this.getInputData().slice();
-
 		const batchSize = this.getNodeParameter('batchSize', 0) as number;
-
 		const returnItems: INodeExecutionData[][] = [[],[]];
 
-		if (nodeContext.items === undefined || options.reset === true) {
-			// Is the first time the node runs
+		let workflowJson;
 
-			nodeContext.currentRunIndex = 0;
-			nodeContext.maxRunIndex = Math.ceil(items.length / batchSize);
+		if(options.batchInSubWorkflow === true){
+			const clearDataAfterProcessing = options.clearDataInSubworkflow as boolean;
+			let processedItems = [] as INodeExecutionData[];
+			const workflowId = this.getWorkflow().id as number;
+			const workflowName = this.getWorkflow().name as string;
+			const nodeName = this.getNode().name as string;
+			workflowJson = await getWorkflow.call(this,workflowId)
+			const subWorkflow = await generateSubworkflow(workflowJson,nodeName, clearDataAfterProcessing);
 
-			// Get the items which should be returned
-			returnItems[1].push.apply(returnItems[1], items.splice(0, batchSize));
+			const workflowInfo: IExecuteWorkflowInfo = {};
+			workflowInfo.code = { ...subWorkflow, name: `AutomatedSubWorkflow of wf:${workflowName} id:${workflowId}`, active: workflowJson.active, createdAt: workflowJson.createdAt, updatedAt: workflowJson.updatedAt } as unknown as IWorkflowBase;
+			console.log(JSON.stringify(workflowInfo));
+			const items = this.getInputData();
+			const nrOfBatches = Math.ceil(items.length / batchSize);
 
-			// Set the other items to be saved in the context to return at later runs
-			nodeContext.items = items;
+			for(let i = 0; i < nrOfBatches; i++){
+				const batchStart = i*batchSize;
+				const batchEnd = batchStart+batchSize;
+				const batchItems = items.slice(batchStart,batchEnd);
 
-			nodeContext.processedItems = [];
-		} else {
-			// The node has been called before. So return the next batch of items.
-			nodeContext.currentRunIndex += 1;
-			returnItems[1].push.apply(returnItems[1], nodeContext.items.splice(0, batchSize));
+				const receivedData = await this.executeWorkflow(workflowInfo, batchItems) as INodeExecutionData[][];
 
-			if(options.combine===true){
-				nodeContext.processedItems.push.apply(nodeContext.processedItems,items);
+				if(!clearDataAfterProcessing){
+					if(options.combine===true){
+						processedItems.push.apply(processedItems,receivedData[0]);
+					}
+					else{
+						processedItems = receivedData[0];
+					}
+				}
 			}
-			else{
-				nodeContext.processedItems =  items;
+
+			if(clearDataAfterProcessing){
+				processedItems.push({
+					json:{}
+				});
 			}
 
+			returnItems[0] = processedItems;
+			return returnItems;
 		}
+		else{
+			// Get the input data and create a new array so that we can remove
+			// items without a problem
+			const items = this.getInputData().slice();
 
-		nodeContext.noItemsLeft = nodeContext.items.length === 0;
+			if (nodeContext.items === undefined || options.reset === true) {
+				// Is the first time the node runs
 
-		if (returnItems[1].length === 0) {
-			// No data left to return so stop execution of the branch
-			returnItems[0] = nodeContext.processedItems;
+				nodeContext.currentRunIndex = 0;
+				nodeContext.maxRunIndex = Math.ceil(items.length / batchSize);
+
+				// Get the items which should be returned
+				returnItems[1].push.apply(returnItems[1], items.splice(0, batchSize));
+
+				// Set the other items to be saved in the context to return at later runs
+				nodeContext.items = items;
+
+				nodeContext.processedItems = [];
+			} else {
+				// The node has been called before. So return the next batch of items.
+				nodeContext.currentRunIndex += 1;
+				returnItems[1].push.apply(returnItems[1], nodeContext.items.splice(0, batchSize));
+
+				if(options.combine===true){
+					nodeContext.processedItems.push.apply(nodeContext.processedItems,items);
+				}
+				else{
+					nodeContext.processedItems =  items;
+				}
+
+			}
+
+			nodeContext.noItemsLeft = nodeContext.items.length === 0;
+
+			if (returnItems[1].length === 0) {
+				// No data left to return so stop execution of the branch
+				returnItems[0] = nodeContext.processedItems;
+				return returnItems;
+			}
+
+			returnItems[1].map((item, index) => {
+				item.pairedItem = {
+					item: index,
+				};
+			});
 			return returnItems;
 		}
 
-		returnItems[1].map((item, index) => {
-			item.pairedItem = {
-				item: index,
-			};
-		});
 
-		return returnItems;
 	}
 }
