@@ -82,7 +82,7 @@ export class SplitInBatchesAdvanced implements INodeType {
 							'Whether the node will process the batches in seperate Subworkflows',
 					},
 					{
-						displayName: 'Clear Data before returning from Subworkflow',
+						displayName: 'Clear Data Before Returning From Subworkflow',
 						name: 'clearDataInSubworkflow',
 						type: 'boolean',
 						default: false,
