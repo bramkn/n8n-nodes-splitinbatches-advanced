@@ -32,7 +32,7 @@ Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes
 
 ## Compatibility
 
-This node was developed and tested with version 0.193.3.
+This node was developed and tested with version 0.221.2.
 
 ## Usage
 
@@ -48,7 +48,27 @@ The node has the option to combine the data into one list of items, instead of t
 
 The data returned is the data coming into the node after each iteration of the loop.
 
+### v2 functionality
+![image](https://user-images.githubusercontent.com/74856333/233983968-e8e65c4e-19e4-4e90-bdbb-8aa4636aa1a8.png)
 
+### max manual batches
+When set it will cap the maximum number of batches it will process before sending the data to the Done branch.
+This is automatically used when the workflow is ran manually. When running in the background by n8n it will not be used.
+
+### Process Batch in Subworkflow
+This will take the workflow present in the split in batch loop and turn it into a subworkflow, this will then be started for each batch in the background.
+This will not actually create a subworkflow it will only execute it as if it was a subworkflow.
+
+![image](https://user-images.githubusercontent.com/74856333/233984675-21d75e1a-d20b-426a-96f2-0fd754bc435a.png)
+
+![image](https://user-images.githubusercontent.com/74856333/233984718-9b056a60-2fd4-4120-9a40-6750b9c22ccc.png)
+
+![image](https://user-images.githubusercontent.com/74856333/233985151-6a32b05e-ca57-4cdb-8933-8fccd145df8c.png)
+
+
+### Clear Data before returning from Subworkflow
+![image](https://user-images.githubusercontent.com/74856333/233985371-7ba64dee-711b-4edf-bdf9-9523cc480062.png)
+![image](https://user-images.githubusercontent.com/74856333/233985417-eaf6c696-d398-4e27-990a-e13b04189ee1.png)
 
 
 ## Resources
@@ -57,6 +77,8 @@ The data returned is the data coming into the node after each iteration of the l
 
 ## Version history
 
-v1: first version. No new functionality in development at this time.
+v2.1: Added option for max manual batches
+v2: Added option for running batches in a subworkflow
+v1: first version.
 
 
