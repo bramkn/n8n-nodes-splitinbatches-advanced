@@ -65,9 +65,7 @@ This will not actually create a subworkflow it will only execute it as if it was
 
 ![image](https://user-images.githubusercontent.com/74856333/233985151-6a32b05e-ca57-4cdb-8933-8fccd145df8c.png)
 
-![image](https://user-images.githubusercontent.com/74856333/234002880-cdb8db5b-39d1-4d42-8a72-1869331f6b63.png)
-
-![image](https://user-images.githubusercontent.com/74856333/234002908-e16acca7-cd18-4e40-a221-0c1d69424090.png)
+![image](https://user-images.githubusercontent.com/74856333/234002880-cdb8db5b-39d1-4d42-8a72-1869331f6b63.png) ![image](https://user-images.githubusercontent.com/74856333/234002908-e16acca7-cd18-4e40-a221-0c1d69424090.png)
 
 
 ### Clear Data before returning from Subworkflow
