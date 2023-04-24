@@ -66,6 +66,14 @@ export class SplitInBatchesAdvanced implements INodeType {
 							'Whether the node will combine all items before outputting to Done',
 					},
 					{
+						displayName: 'Max Manual Batches',
+						name: 'maxManualBatches',
+						type: 'number',
+						default: 5,
+						description:
+							'Max number of batches when doing a manual execution',
+					},
+					{
 						displayName: 'Process Batch in Subworkflow',
 						name: 'batchInSubWorkflow',
 						type: 'boolean',
@@ -92,6 +100,11 @@ export class SplitInBatchesAdvanced implements INodeType {
 		const nodeContext = this.getContext('node');
 		const batchSize = this.getNodeParameter('batchSize', 0) as number;
 		const returnItems: INodeExecutionData[][] = [[],[]];
+		const manual= this.getMode() === 'manual';
+		let maxBatches = 99999999999999;
+		if(manual){
+			maxBatches = options.maxManualBatches as number || maxBatches;
+		}
 
 		let workflowJson;
 
@@ -106,9 +119,9 @@ export class SplitInBatchesAdvanced implements INodeType {
 
 			const workflowInfo: IExecuteWorkflowInfo = {};
 			workflowInfo.code = { ...subWorkflow, name: `AutomatedSubWorkflow of wf:${workflowName} id:${workflowId}`, active: workflowJson.active, createdAt: workflowJson.createdAt, updatedAt: workflowJson.updatedAt } as unknown as IWorkflowBase;
-			console.log(JSON.stringify(workflowInfo));
+
 			const items = this.getInputData();
-			const nrOfBatches = Math.ceil(items.length / batchSize);
+			const nrOfBatches = Math.min(Math.ceil(items.length / batchSize),maxBatches);
 
 			for(let i = 0; i < nrOfBatches; i++){
 				const batchStart = i*batchSize;
@@ -157,7 +170,9 @@ export class SplitInBatchesAdvanced implements INodeType {
 			} else {
 				// The node has been called before. So return the next batch of items.
 				nodeContext.currentRunIndex += 1;
-				returnItems[1].push.apply(returnItems[1], nodeContext.items.splice(0, batchSize));
+				if(nodeContext.currentRunIndex < maxBatches){
+					returnItems[1].push.apply(returnItems[1], nodeContext.items.splice(0, batchSize));
+				}
 
 				if(options.combine===true){
 					nodeContext.processedItems.push.apply(nodeContext.processedItems,items);

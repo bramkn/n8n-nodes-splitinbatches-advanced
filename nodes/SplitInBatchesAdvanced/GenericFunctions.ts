@@ -52,9 +52,9 @@ export async function generateSubworkflow(workflow:IDataObject, thisNode:string,
 		for (const [key2, array] of Object.entries(value as IDataObject)) {
 			const type = key2;
 			const parentArray = array as IDataObject[];
-			for (let childArrayIndex in parentArray) {
-				const childArray = parentArray[childArrayIndex];
-				for (let objectIndex in childArray) {
+			for (let childArrayIndex = 0; childArrayIndex < parentArray.length; childArrayIndex++) {
+				const childArray = parentArray[childArrayIndex] as unknown as IDataObject[];
+				for (let objectIndex = 0; objectIndex < childArray.length; objectIndex++) {
 					const object = childArray[objectIndex] as IDataObject;
 					arrayOfPaths.push({
 						type:type,
