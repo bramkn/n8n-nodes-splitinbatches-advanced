@@ -43,7 +43,23 @@ export async function getWorkflow(
 }
 
 export async function generateSubworkflow(workflow:IDataObject, thisNode:string, clearDataAfterProcessing:boolean = false){
-	const nodes = workflow.nodes as IDataObject[];
+	const arrayOfPaths = await getPaths(workflow) as IDataObject[];
+	let includedPaths = await getIncludedPaths(arrayOfPaths, thisNode, clearDataAfterProcessing) as IDataObject[];
+	const includedNodes = await getIncludedNodes(workflow,includedPaths, thisNode);
+	const includedConnections = await getincludedConnections(includedPaths, thisNode) as any;
+
+	// Add Start node so it can be executed in a subworkflow
+	includedNodes.push(await getStartNode(includedNodes[0]));
+
+	// Add End Node to clear data before returning
+	if(clearDataAfterProcessing){
+		includedNodes.push(await getEndNode(includedNodes));
+	}
+
+	return {nodes:includedNodes,connections:includedConnections};
+}
+
+export async function getPaths(workflow:IDataObject){
 	const connections = workflow.connections as IDataObject;
 	const arrayOfPaths = [] as IDataObject[];
 
@@ -68,7 +84,10 @@ export async function generateSubworkflow(workflow:IDataObject, thisNode:string,
 			}
 		}
 	}
+	return arrayOfPaths;
+}
 
+export async function getIncludedPaths(arrayOfPaths:IDataObject[], thisNode:string, clearDataAfterProcessing:boolean = false){
 	let includedPaths = [] as IDataObject[];
 	function checkPath(path:IDataObject){
 		if(includedPaths.includes(path)){
@@ -91,11 +110,17 @@ export async function generateSubworkflow(workflow:IDataObject, thisNode:string,
 	else{
 		includedPaths = includedPaths.filter(x=> !(x.from === thisNode && x.parentIndex === '0') && x.to !== thisNode ) as IDataObject[];
 	}
+	return includedPaths;
+}
 
+export async function getIncludedNodes(workflow:IDataObject,includedPaths:IDataObject[], thisNode:string){
+	const nodes = workflow.nodes as IDataObject[];
 	const includedNodesList = [...new Set(includedPaths.map(x => x.from).concat(includedPaths.map(x => x.to)))];
-
 	const includedNodes = nodes.filter(x => includedNodesList.includes(x.name) && x.name !== thisNode) as IDataObject[];
+	return includedNodes;
+}
 
+export async function getincludedConnections(includedPaths:IDataObject[], thisNode:string){
 	const includedConnections = {} as any;
 	for (let includedPathIndex = 0; includedPathIndex < includedPaths.length; includedPathIndex++) {
 		const includedPath = includedPaths[includedPathIndex] as includedPathConfig;
@@ -117,7 +142,10 @@ export async function generateSubworkflow(workflow:IDataObject, thisNode:string,
 		includedConnections[includedPath.from][includedPath.type][includedPath.parentIndex][includedPath.childIndex] = includedPath.object;
 
 	}
+	return includedConnections;
+}
 
+export async function getStartNode(firstNode:IDataObject){
 	const startNode = {
 		"parameters": {},
 		"id": "2cd3ce3f-e0c9-4c3b-8be1-25b152ba0f0f",
@@ -126,16 +154,15 @@ export async function generateSubworkflow(workflow:IDataObject, thisNode:string,
 		"typeVersion": 1,
 	};
 
-
-
 	// Add StartNode
-	let positionOfStartNode = Object.assign([],includedNodes[0].position) as any;
+	let positionOfStartNode = Object.assign([],firstNode.position) as any;
 	positionOfStartNode[0] = positionOfStartNode[0] - 300;
 	const startNodeWithPosition = {...startNode,position:positionOfStartNode};
-	includedNodes.push(startNodeWithPosition);
+	return startNodeWithPosition;
+}
 
+export async function getEndNode(includedNodes:IDataObject[]){
 	// Add End Node to clear data before returning
-	if(clearDataAfterProcessing){
 		const clearDataNode = {
 			"parameters": {
 				"keepOnlySet": true,
@@ -151,8 +178,5 @@ export async function generateSubworkflow(workflow:IDataObject, thisNode:string,
 		let positionOfEndNode = Object.assign([],maxPosition.position) as any;
 		positionOfEndNode[0] = positionOfEndNode[0] + 300;
 		const endNodeWithPosition = {...clearDataNode,position:positionOfEndNode};
-		includedNodes.push(endNodeWithPosition);
-	}
-
-	return {nodes:includedNodes,connections:includedConnections};
+		return endNodeWithPosition;
 }
