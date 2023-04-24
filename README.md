@@ -57,6 +57,8 @@ The data returned is the data coming into the node after each iteration of the l
 
 ## Version history
 
-v1: first version. No new functionality in development at this time.
+v2.1: Added option for max manual batches
+v2: Added option for running batches in a subworkflow
+v1: first version.
 
 
