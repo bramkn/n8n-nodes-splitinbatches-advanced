@@ -32,7 +32,7 @@ Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes
 
 ## Compatibility
 
-This node was developed and tested with version 0.193.3.
+This node was developed and tested with version 0.221.1.
 
 ## Usage
 
