@@ -9,6 +9,7 @@ export class SplitInBatchesAdvanced implements INodeType {
 		icon: 'fa:th-large',
 		group: ['organization'],
 		version: 1,
+		subtitle: '={{ $parameter["options"]["batchInSubWorkflow"] ? "Process in Subworkflow" : "Process in Mainworkflow"}}',
 		description: 'Split data into batches and iterate over each batch',
 		defaults: {
 			name: 'SplitInBatches-Advanced',
