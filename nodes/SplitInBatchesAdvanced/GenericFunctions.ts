@@ -1,23 +1,24 @@
-import type {
 
+import type {
+	IConnection,
+	IConnections,
 	IDataObject,
 	IExecuteFunctions,
 	IHookFunctions,
 	ILoadOptionsFunctions,
-	INode,
 	JsonObject,
 } from 'n8n-workflow';
 import { NodeApiError } from 'n8n-workflow';
 import type { OptionsWithUri } from 'request';
-import { includedPathConfig } from './types';
+import { includedPathConfig, NodePosition } from './types';
 
 /**
  * A custom API request function to be used with the resourceLocator lookup queries.
  */
 export async function getWorkflow(
 	this: IHookFunctions | IExecuteFunctions | ILoadOptionsFunctions,
-	workflowId: number
-): Promise<any> {
+	workflowId: number,
+): Promise<IDataObject> {
 
 	type N8nApiCredentials = {
 		apiKey: string;
@@ -42,11 +43,11 @@ export async function getWorkflow(
 	}
 }
 
-export async function generateSubworkflow(workflow:IDataObject, thisNode:string, clearDataAfterProcessing:boolean = false){
+export async function generateSubworkflow(workflow:IDataObject, thisNode:string, clearDataAfterProcessing = false){
 	const arrayOfPaths = await getPaths(workflow) as IDataObject[];
-	let includedPaths = await getIncludedPaths(arrayOfPaths, thisNode, clearDataAfterProcessing) as IDataObject[];
+	const includedPaths = await getIncludedPaths(arrayOfPaths, thisNode, clearDataAfterProcessing) as IDataObject[];
 	const includedNodes = await getIncludedNodes(workflow,includedPaths, thisNode);
-	const includedConnections = await getincludedConnections(includedPaths, thisNode) as any;
+	const includedConnections = await getincludedConnections(includedPaths, thisNode) as IDataObject;
 
 	// Add Start node so it can be executed in a subworkflow
 	includedNodes.push(await getStartNode(includedNodes[0]));
@@ -73,13 +74,13 @@ export async function getPaths(workflow:IDataObject){
 				for (let objectIndex = 0; objectIndex < childArray.length; objectIndex++) {
 					const object = childArray[objectIndex] as IDataObject;
 					arrayOfPaths.push({
-						type:type,
+						type,
 						from:key,
 						to:object.node,
 						parentIndex:childArrayIndex,
 						childIndex:objectIndex,
-						object:object
-					})
+						object,
+					});
 				}
 			}
 		}
@@ -87,7 +88,7 @@ export async function getPaths(workflow:IDataObject){
 	return arrayOfPaths;
 }
 
-export async function getIncludedPaths(arrayOfPaths:IDataObject[], thisNode:string, clearDataAfterProcessing:boolean = false){
+export async function getIncludedPaths(arrayOfPaths:IDataObject[], thisNode:string, clearDataAfterProcessing = false){
 	let includedPaths = [] as IDataObject[];
 	function checkPath(path:IDataObject){
 		if(includedPaths.includes(path)){
@@ -95,13 +96,13 @@ export async function getIncludedPaths(arrayOfPaths:IDataObject[], thisNode:stri
 		else{
 			includedPaths.push(path);
 			const pathsToCheck = arrayOfPaths.filter(x=> x.from === path.to);
-			for (let pathToCheck of pathsToCheck) {
+			for (const pathToCheck of pathsToCheck) {
 				checkPath(pathToCheck);
 			}
 		}
 	}
 	const startPaths = arrayOfPaths.filter(x=> x.from ===thisNode && x.parentIndex !== '0');
-	for (let pathToCheck of startPaths) {
+	for (const pathToCheck of startPaths) {
 		checkPath(pathToCheck);
 	}
 	if(clearDataAfterProcessing){
@@ -121,7 +122,8 @@ export async function getIncludedNodes(workflow:IDataObject,includedPaths:IDataO
 }
 
 export async function getincludedConnections(includedPaths:IDataObject[], thisNode:string){
-	const includedConnections = {} as any;
+
+	const includedConnections = {} as IConnections;
 	for (let includedPathIndex = 0; includedPathIndex < includedPaths.length; includedPathIndex++) {
 		const includedPath = includedPaths[includedPathIndex] as includedPathConfig;
 		if(includedPath.from === thisNode){
@@ -136,10 +138,11 @@ export async function getincludedConnections(includedPaths:IDataObject[], thisNo
 		if(includedConnections[includedPath.from] === undefined){
 			includedConnections[includedPath.from]={};
 		}
+
 		if(!(includedConnections[includedPath.from][includedPath.type])){
 			includedConnections[includedPath.from][includedPath.type] = [[],[],[],[]];
 		}
-		includedConnections[includedPath.from][includedPath.type][includedPath.parentIndex][includedPath.childIndex] = includedPath.object;
+		includedConnections[includedPath.from][includedPath.type][includedPath.parentIndex][includedPath.childIndex] = includedPath.object as unknown as IConnection;
 
 	}
 	return includedConnections;
@@ -155,7 +158,7 @@ export async function getStartNode(firstNode:IDataObject){
 	};
 
 	// Add StartNode
-	let positionOfStartNode = Object.assign([],firstNode.position) as any;
+	const positionOfStartNode = Object.assign([],firstNode.position) as NodePosition;
 	positionOfStartNode[0] = positionOfStartNode[0] - 300;
 	const startNodeWithPosition = {...startNode,position:positionOfStartNode};
 	return startNodeWithPosition;
@@ -166,16 +169,16 @@ export async function getEndNode(includedNodes:IDataObject[]){
 		const clearDataNode = {
 			"parameters": {
 				"keepOnlySet": true,
-				"options": {}
+				"options": {},
 			},
 			"id": "ccca7fef-7b2e-4399-a2d4-9cf3300f515c",
 			"name": "EndClearDataNodeAfterAutomatedSubWorkflow",
 			"type": "n8n-nodes-base.set",
 			"typeVersion": 1,
-			"executeOnce": true
+			"executeOnce": true,
 		};
-		const maxPosition = includedNodes.reduce((prev, current) => ((prev.position as number) > (current.position as number)) ? prev : current)
-		let positionOfEndNode = Object.assign([],maxPosition.position) as any;
+		const maxPosition = includedNodes.reduce((prev, current) => ((prev.position as number) > (current.position as number)) ? prev : current);
+		const positionOfEndNode = Object.assign([],maxPosition.position) as NodePosition;
 		positionOfEndNode[0] = positionOfEndNode[0] + 300;
 		const endNodeWithPosition = {...clearDataNode,position:positionOfEndNode};
 		return endNodeWithPosition;

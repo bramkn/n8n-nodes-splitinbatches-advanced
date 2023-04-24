@@ -8,3 +8,8 @@ export type includedPathConfig = {
 	childIndex:number,
 	object:IDataObject
 }
+
+export type NodePosition = [
+	x:number,
+	y:number
+]

@@ -114,7 +114,7 @@ export class SplitInBatchesAdvanced implements INodeType {
 			const workflowId = this.getWorkflow().id as number;
 			const workflowName = this.getWorkflow().name as string;
 			const nodeName = this.getNode().name as string;
-			workflowJson = await getWorkflow.call(this,workflowId)
+			workflowJson = await getWorkflow.call(this,workflowId);
 			const subWorkflow = await generateSubworkflow(workflowJson,nodeName, clearDataAfterProcessing);
 
 			const workflowInfo: IExecuteWorkflowInfo = {};
@@ -142,7 +142,7 @@ export class SplitInBatchesAdvanced implements INodeType {
 
 			if(clearDataAfterProcessing){
 				processedItems.push({
-					json:{}
+					json:{},
 				});
 			}
 
