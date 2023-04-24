@@ -67,9 +67,9 @@ This will not actually create a subworkflow it will only execute it as if it was
 
 
 ### Clear Data before returning from Subworkflow
-On
+#### Enabled
 ![image](https://user-images.githubusercontent.com/74856333/233985371-7ba64dee-711b-4edf-bdf9-9523cc480062.png)
-Off
+#### Disabled
 ![image](https://user-images.githubusercontent.com/74856333/233985417-eaf6c696-d398-4e27-990a-e13b04189ee1.png)
 
 
