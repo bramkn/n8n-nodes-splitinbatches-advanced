@@ -17,7 +17,7 @@ import { includedPathConfig, NodePosition } from './types';
  */
 export async function getWorkflow(
 	this: IHookFunctions | IExecuteFunctions | ILoadOptionsFunctions,
-	workflowId: number,
+	workflowId: string,
 ): Promise<IDataObject> {
 
 	type N8nApiCredentials = {

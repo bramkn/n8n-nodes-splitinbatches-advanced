@@ -112,7 +112,7 @@ export class SplitInBatchesAdvanced implements INodeType {
 		if(options.batchInSubWorkflow === true){
 			const clearDataAfterProcessing = options.clearDataInSubworkflow as boolean;
 			let processedItems = [] as INodeExecutionData[];
-			const workflowId = this.getWorkflow().id as number;
+			const workflowId = this.getWorkflow().id as string;
 			const workflowName = this.getWorkflow().name as string;
 			const nodeName = this.getNode().name as string;
 			workflowJson = await getWorkflow.call(this,workflowId);
